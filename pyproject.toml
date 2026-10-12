@@ -5,3 +5,6 @@ requires-python = ">=3.13"
 dependencies = [
     "fastapi[standard]>=0.143.0",
 ]
+
+[tool.fastapi]
+entrypoint = "main:app"
