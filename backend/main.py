@@ -26,7 +26,7 @@ def send_sms(phone_number,message):
   'message': message,
   'key': api_key,
 })
-   print(res.json())
+   print(res.json(),"And Status is: ",res.json().get('success'))
 
 @app.get("/test")
 async def test():
@@ -52,7 +52,7 @@ async def sendALL(request:Request):
 
       for i, person in enumerate(listOfPeople):
           assigned_name = assigned_names[i]
-         # send_sms(person.phoneNum, f"Hello {person.name}! You Have been assigned to gift {assigned_name} This is a test" ) # Put wishlist later
+          send_sms(person.phoneNum, f"Hello {person.name}! You Have been assigned to gift {assigned_name} This is a test" ) # Put wishlist later
           print(f"SMS sent to {person.name} at {person.phoneNum}: You have been assigned to give a gift to {assigned_name}. $25 minimum.")
           time.sleep(2)  # Avoid rate limits
    return body
