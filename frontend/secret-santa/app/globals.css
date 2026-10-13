@@ -65,3 +65,208 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* ============================================================
+   🎄 Secret Santa festive styles
+   ============================================================ */
+
+.festive-bg {
+  background:
+    radial-gradient(ellipse at top, #1e3a5f 0%, transparent 60%),
+    radial-gradient(ellipse at bottom, #0b3d2e 0%, transparent 70%),
+    linear-gradient(180deg, #0a1a33 0%, #0d2b45 50%, #0b3d2e 100%);
+  color: #fff;
+}
+
+.festive-title {
+  font-family: var(--font-christmas), "Georgia", serif;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+/* ---------- Taskbar ---------- */
+.festive-nav {
+  background:
+    repeating-linear-gradient(
+      -45deg,
+      rgba(255, 255, 255, 0.06) 0 12px,
+      transparent 12px 24px
+    ),
+    linear-gradient(180deg, #b91c1c 0%, #7f1d1d 100%);
+  border-bottom: 6px solid #fff;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.45);
+}
+.festive-nav .festive-title {
+  color: #fff;
+  text-shadow:
+    0 0 8px rgba(255, 215, 0, 0.8),
+    2px 2px 0 #14532d;
+}
+
+.sway {
+  display: inline-block;
+  animation: sway 2.5s ease-in-out infinite alternate;
+}
+@keyframes sway {
+  from { transform: rotate(-10deg); }
+  to   { transform: rotate(10deg); }
+}
+
+/* ---------- Christmas lights ---------- */
+.light-string {
+  display: flex;
+  justify-content: space-between;
+  pointer-events: none;
+  z-index: 5;
+}
+.light-string-h {
+  flex-direction: row;
+  height: 22px;
+  align-items: flex-start;
+  background: linear-gradient(#14532d, #14532d) center 3px / 100% 2px no-repeat;
+}
+.light-string-v {
+  flex-direction: column;
+  width: 22px;
+  align-items: flex-start;
+  background: linear-gradient(#14532d, #14532d) 3px center / 2px 100% no-repeat;
+}
+
+.bulb {
+  position: relative;
+  display: block;
+  width: 11px;
+  height: 18px;
+  margin-top: 4px;
+  border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+  animation: bulb-cycle 2s linear infinite;
+}
+.bulb::before {
+  /* the little socket on top of each bulb */
+  content: "";
+  position: absolute;
+  top: -4px;
+  left: 2px;
+  width: 7px;
+  height: 5px;
+  border-radius: 2px;
+  background: #1f2937;
+}
+.bulb-v {
+  margin-top: 0;
+  margin-left: 4px;
+  transform: rotate(-90deg);
+}
+
+@keyframes bulb-cycle {
+  0%, 100% { background: #ef4444; box-shadow: 0 2px 14px 3px rgba(239, 68, 68, 0.85); }
+  20%      { background: #facc15; box-shadow: 0 2px 14px 3px rgba(250, 204, 21, 0.85); }
+  40%      { background: #22c55e; box-shadow: 0 2px 14px 3px rgba(34, 197, 94, 0.85); }
+  60%      { background: #3b82f6; box-shadow: 0 2px 14px 3px rgba(59, 130, 246, 0.85); }
+  80%      { background: #d946ef; box-shadow: 0 2px 14px 3px rgba(217, 70, 239, 0.85); }
+}
+
+/* ---------- Snow ---------- */
+.snowflake {
+  position: absolute;
+  top: -40px;
+  color: #fff;
+  text-shadow: 0 0 6px rgba(255, 255, 255, 0.8);
+  animation-name: snowfall;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+  will-change: transform;
+}
+@keyframes snowfall {
+  0%   { transform: translate(0, 0) rotate(0deg); }
+  50%  { transform: translate(var(--drift), 55vh) rotate(180deg); }
+  100% { transform: translate(0, 110vh) rotate(360deg); }
+}
+
+.snow-ground {
+  position: absolute;
+  left: -5%;
+  right: -5%;
+  bottom: -40px;
+  height: 110px;
+  background: #f8fafc;
+  border-radius: 50% 50% 0 0 / 100% 100% 0 0;
+  box-shadow: 0 -8px 30px rgba(255, 255, 255, 0.5);
+}
+
+/* ---------- Form card ---------- */
+.festive-card {
+  background:
+    linear-gradient(rgba(255, 255, 255, 0.94), rgba(255, 250, 240, 0.96));
+  color: #14532d;
+  border: 4px solid #fff;
+  outline: 3px dashed #b91c1c;
+  outline-offset: -12px;
+  box-shadow:
+    0 20px 50px rgba(0, 0, 0, 0.5),
+    inset 0 0 40px rgba(220, 38, 38, 0.08);
+}
+
+.festive-row {
+  background: #fef2f2;
+}
+.festive-row:nth-child(even) {
+  background: #ecfdf5;
+}
+
+.festive-input {
+  width: 100%;
+  min-width: 140px;
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.6rem;
+  border: 2px solid #fca5a5;
+  background: #fff;
+  color: #1f2937;
+  outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.festive-input::placeholder {
+  color: #9ca3af;
+}
+.festive-input:focus {
+  border-color: #16a34a;
+  box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.25);
+}
+
+.plus-btn {
+  background: radial-gradient(circle at 30% 30%, #f87171, #b91c1c);
+  border: 3px solid #fff;
+  box-shadow: 0 4px 14px rgba(185, 28, 28, 0.5);
+  transition: transform 0.15s;
+  line-height: 1;
+}
+.plus-btn:hover {
+  transform: scale(1.12) rotate(90deg);
+}
+
+.submit-btn {
+  background: linear-gradient(180deg, #22c55e 0%, #15803d 100%);
+  border: 3px solid #fff;
+  box-shadow:
+    0 6px 0 #14532d,
+    0 10px 25px rgba(21, 128, 61, 0.6);
+  transition: transform 0.1s, box-shadow 0.1s;
+}
+.submit-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow:
+    0 8px 0 #14532d,
+    0 14px 30px rgba(21, 128, 61, 0.7);
+}
+.submit-btn:active:not(:disabled) {
+  transform: translateY(4px);
+  box-shadow: 0 2px 0 #14532d;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .snowflake,
+  .bulb,
+  .sway {
+    animation: none;
+  }
+}

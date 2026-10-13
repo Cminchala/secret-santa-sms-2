@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Geist } from "next/font/google";
+import { Geist, Mountains_of_Christmas } from "next/font/google";
 import { ThemeProvider } from "next-themes";
 import "./globals.css";
 
@@ -9,14 +9,22 @@ const defaultUrl = process.env.VERCEL_URL
 
 export const metadata: Metadata = {
   metadataBase: new URL(defaultUrl),
-  title: "Next.js and Supabase Starter Kit",
-  description: "The fastest way to build apps with Next.js and Supabase",
+  title: "🎅 Secret Santa",
+  description: "Draw names and text everyone their Secret Santa match!",
 };
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
   display: "swap",
   subsets: ["latin"],
+});
+
+const christmasFont = Mountains_of_Christmas({
+  variable: "--font-christmas",
+  weight: ["400", "700"],
+  display: "swap",
+  subsets: ["latin"],
+  adjustFontFallback: false,
 });
 
 export default function RootLayout({
@@ -26,7 +34,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${geistSans.className} antialiased`}>
+      <body className={`${geistSans.className} ${christmasFont.variable} antialiased`}>
         <ThemeProvider
           attribute="class"
           defaultTheme="system"
