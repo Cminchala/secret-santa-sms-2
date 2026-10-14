@@ -8,9 +8,12 @@ from pydantic_extra_types.phone_numbers import PhoneNumber
 import random 
 import time
 from fastapi.middleware.cors import CORSMiddleware
+import stripe
+
 app = FastAPI()
 load_dotenv()
 api_key=os.getenv('apikey')
+stripe.api_key = os.getenv('STRIPE_SECRET_KEY')
 
 origins = [
     "http://localhost:3000"
@@ -24,6 +27,9 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+class CheckoutRequest(BaseModel):
+    participants: list
 
 class USPhone(PhoneNumber):
     default_region_code = 'US'
@@ -48,6 +54,39 @@ def send_sms(phone_number,message):
 @app.get("/test")
 async def test():
    return {"Message":"Hello world"}
+
+@app.post("/create-checkout-session")
+async def create_checkout_session(request: Request):
+    try:
+        body = await request.json()
+        participants = body.get("participants", [])
+        if not participants or len(participants) < 3:
+            return Response(content="At least 3 participants are required.", status_code=400)
+
+        origin = request.headers.get("origin") or "http://localhost:3000"
+
+        checkout_session = stripe.checkout.Session.create(
+            line_items=[
+                {
+                    "price_data": {
+                        "currency": "usd",
+                        "product_data": {
+                            "name": "Secret Santa Gift Exchange Drawing",
+                            "description": f"Automated Secret Santa name drawing & notifications for {len(participants)} elves.",
+                        },
+                        "unit_amount": 100,  # $1.00 USD entry fee
+                    },
+                    "quantity": 1,
+                }
+            ],
+            mode="payment",
+            allow_promotion_codes=True,
+            success_url=f"{origin}/checkout/success?session_id={{CHECKOUT_SESSION_ID}}",
+            cancel_url=f"{origin}/?canceled=true",
+        )
+        return {"url": checkout_session.url}
+    except Exception as e:
+        return Response(content=str(e), status_code=500)
 
 @app.post("/SendMSG")
 async def sendALL(request:Request):
