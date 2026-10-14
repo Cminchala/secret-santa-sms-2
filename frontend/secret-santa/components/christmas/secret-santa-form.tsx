@@ -58,16 +58,28 @@ export function SecretSantaForm() {
 
     setStatus({ kind: "loading" });
     try {
-      const res = await fetch(`${API_URL}/SendMSG`, {
+      // Save participants to sessionStorage so we can trigger /SendMSG upon return from Stripe
+      sessionStorage.setItem("secret_santa_participants", JSON.stringify(payload));
+
+      // Call the FastAPI backend endpoint to create a Stripe checkout session
+      const res = await fetch(`${API_URL}/create-checkout-session`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
+        body: JSON.stringify({ participants: payload }),
       });
+
       if (!res.ok) {
         const text = await res.text();
-        throw new Error(text || `Request failed (${res.status})`);
+        throw new Error(text || "Failed to start checkout session.");
       }
-      setStatus({ kind: "success", message: "Ho ho ho! 🎅 Names drawn and messages are on their way!" });
+
+      const data = await res.json();
+      if (!data.url) {
+        throw new Error("No checkout URL returned from backend.");
+      }
+
+      // Redirect user to Stripe Checkout
+      window.location.href = data.url;
     } catch (err) {
       setStatus({
         kind: "error",
@@ -88,7 +100,74 @@ export function SecretSantaForm() {
             (e.g. <span className="font-mono">+15551234567</span>). Separate wishlist items with commas.
           </p>
 
-          <div className="overflow-x-auto">
+          {/* Mobile Card Layout (visible on phones < 768px) */}
+          <div className="space-y-4 md:hidden">
+            {rows.map((row, i) => (
+              <div
+                key={row.id}
+                className="festive-row relative rounded-xl border border-red-200 p-4 shadow-sm"
+              >
+                <div className="mb-2 flex items-center justify-between">
+                  <span className="flex h-7 w-7 items-center justify-center rounded-full bg-red-700 text-xs font-bold text-white">
+                    {i + 1}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => removeRow(row.id)}
+                    disabled={rows.length <= 1}
+                    className="flex h-8 w-8 items-center justify-center rounded-full bg-red-100 text-sm font-bold text-red-700 transition active:scale-95 disabled:opacity-30"
+                    aria-label={`Remove participant ${i + 1}`}
+                  >
+                    ✖
+                  </button>
+                </div>
+
+                <div className="space-y-2.5">
+                  <div>
+                    <label className="mb-1 block text-xs font-semibold uppercase tracking-wider text-red-800">
+                      🧑 Name
+                    </label>
+                    <input
+                      className="festive-input"
+                      placeholder="Buddy the Elf"
+                      value={row.name}
+                      onChange={(e) => updateRow(row.id, "name", e.target.value)}
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <label className="mb-1 block text-xs font-semibold uppercase tracking-wider text-red-800">
+                      📱 Phone Number
+                    </label>
+                    <input
+                      className="festive-input"
+                      type="tel"
+                      placeholder="+15551234567"
+                      value={row.phoneNum}
+                      onChange={(e) => updateRow(row.id, "phoneNum", e.target.value)}
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <label className="mb-1 block text-xs font-semibold uppercase tracking-wider text-red-800">
+                      🎁 Wishlist (optional)
+                    </label>
+                    <input
+                      className="festive-input"
+                      placeholder="Socks, cocoa, a sled"
+                      value={row.wishlist}
+                      onChange={(e) => updateRow(row.id, "wishlist", e.target.value)}
+                    />
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Desktop Table Layout (visible on screens >= 768px) */}
+          <div className="hidden overflow-x-auto md:block">
             <table className="w-full border-separate border-spacing-y-2">
               <thead>
                 <tr className="text-left text-sm uppercase tracking-wider text-white">
@@ -181,7 +260,7 @@ export function SecretSantaForm() {
               disabled={status.kind === "loading"}
               className="submit-btn rounded-full px-10 py-3 text-lg font-bold text-white disabled:cursor-wait disabled:opacity-70"
             >
-              {status.kind === "loading" ? "🦌 Delivering..." : "🎄 Submit & Draw Names 🎄"}
+              {status.kind === "loading" ? "🦌 Heading to Checkout..." : "🎄 Checkout & Draw Names 🎄"}
             </button>
           </div>
         </div>

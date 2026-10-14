@@ -35,18 +35,18 @@ export function LightString({
  */
 export function ChristmasLightsFrame({ children }: { children: React.ReactNode }) {
   return (
-    <div className="relative px-6 py-7 sm:px-8 sm:py-8">
-      <LightString count={22} className="absolute left-4 right-4 top-0" />
-      <LightString count={22} className="absolute left-4 right-4 bottom-0 rotate-180" />
+    <div className="relative px-3 py-4 sm:px-8 sm:py-8">
+      <LightString count={22} className="absolute left-2 right-2 sm:left-4 sm:right-4 top-0" />
+      <LightString count={22} className="absolute left-2 right-2 sm:left-4 sm:right-4 bottom-0 rotate-180" />
       <LightString
         count={12}
         orientation="vertical"
-        className="absolute top-4 bottom-4 left-0"
+        className="absolute top-2 bottom-2 sm:top-4 sm:bottom-4 left-0"
       />
       <LightString
         count={12}
         orientation="vertical"
-        className="absolute top-4 bottom-4 right-0 rotate-180"
+        className="absolute top-2 bottom-2 sm:top-4 sm:bottom-4 right-0 rotate-180"
       />
       {children}
     </div>
