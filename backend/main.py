@@ -25,12 +25,16 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-
+class USPhone(PhoneNumber):
+    default_region_code = 'US'
+    supported_regions = ['US']
+    phone_format = 'NATIONAL'
 
 class SMSItems(BaseModel):
    name:str
-   phoneNum : PhoneNumber
+   phoneNum : USPhone
    wishlist : list
+
 
 
 def send_sms(phone_number,message):
@@ -61,11 +65,16 @@ async def sendALL(request:Request):
       names = [p.name for p in listOfPeople]
       assigned_names = names[:]
       while any(assigned_names[i] == names[i] for i in range(len(names))):
+          
           random.shuffle(assigned_names)
+          print("Assigned: ",assigned_names)
 
       for i, person in enumerate(listOfPeople):
           assigned_name = assigned_names[i]
           # send_sms(person.phoneNum, f"Hello {person.name}! You Have been assigned to gift {assigned_name} This is a test" ) # Put wishlist later
           print(f"SMS sent to {person.name} at {person.phoneNum}: You have been assigned to give a gift to {assigned_name}. $25 minimum.")
-          time.sleep(2)  # Avoid rate limits
-   return body
+          # time.sleep(2)  # Avoid rate limits
+    
+      return {"Message": "Messages sent successfully!"}
+   else:
+        return {"Message": "Error: At least 3 people are required for Secret Santa."}
