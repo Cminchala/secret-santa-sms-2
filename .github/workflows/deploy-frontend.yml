@@ -52,7 +52,7 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           envs: DOCKER_USERNAME,DOCKER_PASSWORD,IMAGE_TAG
           script: |
-            sudo docker rm -f secret-santa 2>/dev/null || true
+            docker system prune -af --volumes
             set -eu
 
             echo "$DOCKER_PASSWORD" | sudo docker login \
@@ -60,8 +60,7 @@ jobs:
 
             sudo docker pull "$DOCKER_USERNAME/secret-santa:$IMAGE_TAG"
 
-            # Replace this app's existing container only.
-            sudo docker rm -f secret-santa 2>/dev/null || true
+            
 
             sudo docker run -d \
               --name secret-santa \
