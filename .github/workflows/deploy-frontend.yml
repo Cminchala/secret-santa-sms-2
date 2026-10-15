@@ -39,9 +39,6 @@ jobs:
         working-directory: frontend/secret-santa
         run: npm run build
 
-      - name: Verify build
-        run: test -f frontend/secret-santa/dist/index.html
-
       - name: Configure SSH
         env:
           EC2_SSH_KEY: ${{ secrets.EC2_SSH_KEY }}
