@@ -1,4 +1,3 @@
-
 name: Deploy Secret Santa Frontend
 
 on:
@@ -6,7 +5,7 @@ on:
     branches:
       - main
     paths:
-      - "frontend/**"
+      - "frontend/secret-santa/**"
       - ".github/workflows/deploy-frontend.yml"
   workflow_dispatch:
 
@@ -30,18 +29,18 @@ jobs:
         with:
           node-version: "22"
           cache: npm
-          cache-dependency-path: frontend/package-lock.json
+          cache-dependency-path: frontend/secret-santa/package-lock.json
 
       - name: Install dependencies
-        working-directory: frontend
+        working-directory: frontend/secret-santa
         run: npm ci
 
       - name: Build frontend
-        working-directory: frontend
+        working-directory: frontend/secret-santa
         run: npm run build
 
       - name: Verify build
-        run: test -f frontend/dist/index.html
+        run: test -f frontend/secret-santa/dist/index.html
 
       - name: Configure SSH
         env:
@@ -52,11 +51,11 @@ jobs:
           printf '%s\n' "$EC2_SSH_KEY" > ~/.ssh/ec2_key
           chmod 600 ~/.ssh/ec2_key
 
-      - name: Verify and configure server host key
+      - name: Add server host key
         env:
           EC2_HOST: ${{ secrets.EC2_HOST }}
         run: |
-          ssh-keyscan -H "$EC2_HOST" > ~/.ssh/known_hosts
+          ssh-keyscan -H "$EC2_HOST" >> ~/.ssh/known_hosts
           chmod 600 ~/.ssh/known_hosts
 
       - name: Prepare deployment directory
@@ -76,7 +75,7 @@ jobs:
         run: |
           rsync -az --delete \
             -e "ssh -i ~/.ssh/ec2_key" \
-            frontend/dist/ \
+            frontend/secret-santa/dist/ \
             "$EC2_USERNAME@$EC2_HOST:/var/www/secret-santa/"
 
       - name: Verify Nginx
