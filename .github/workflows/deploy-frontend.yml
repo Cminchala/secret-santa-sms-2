@@ -37,8 +37,8 @@ jobs:
           file: ./frontend/secret-santa/Dockerfile
           push: true
           tags: |
-            ${{ secrets.DOCKER_USERNAME }}/secretsanta:latest
-            ${{ secrets.DOCKER_USERNAME }}/secretsanta:${{ github.sha }}
+            ${{ secrets.DOCKER_USERNAME }}/secret-santa:latest
+            ${{ secrets.DOCKER_USERNAME }}/secret-santa:${{ github.sha }}
 
       - name: Deploy image to EC2
         uses: appleboy/ssh-action@v1.2.2
@@ -52,21 +52,22 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           envs: DOCKER_USERNAME,DOCKER_PASSWORD,IMAGE_TAG
           script: |
+            sudo docker rm -f secret-santa 2>/dev/null || true
             set -eu
 
             echo "$DOCKER_PASSWORD" | sudo docker login \
               --username "$DOCKER_USERNAME" --password-stdin
 
-            sudo docker pull "$DOCKER_USERNAME/secretsanta:$IMAGE_TAG"
+            sudo docker pull "$DOCKER_USERNAME/secret-santa:$IMAGE_TAG"
 
             # Replace this app's existing container only.
             sudo docker rm -f secret-santa 2>/dev/null || true
 
             sudo docker run -d \
-              --name secretsanta \
+              --name secret-santa \
               --restart unless-stopped \
               -p 3000:3000 \
-              "$DOCKER_USERNAME/secretsanta:$IMAGE_TAG"
+              "$DOCKER_USERNAME/secret-santa:$IMAGE_TAG"
 
             # Remove dangling images only; do not prune volumes or other containers.
             sudo docker image prune -f
