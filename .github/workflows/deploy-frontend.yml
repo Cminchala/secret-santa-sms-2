@@ -1,4 +1,4 @@
-name: Deploy Secret Santa Frontend
+name: Build and deploy Secret Santa app
 
 on:
   push:
@@ -13,73 +13,60 @@ permissions:
   contents: read
 
 concurrency:
-  group: frontend-deployment
+  group: secret-santa-deployment
   cancel-in-progress: false
 
 jobs:
-  deploy:
+  build_push_deploy:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
+      - name: Check out repository
         uses: actions/checkout@v4
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
         with:
-          node-version: "22"
-          cache: npm
-          cache-dependency-path: frontend/secret-santa/package-lock.json
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
 
-      - name: Install dependencies
-        working-directory: frontend/secret-santa
-        run: npm ci
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v6
+        with:
+          context: ./frontend/secret-santa
+          file: ./frontend/secret-santa/Dockerfile
+          push: true
+          tags: |
+            ${{ secrets.DOCKER_USERNAME }}/secret-santa:latest
+            ${{ secrets.DOCKER_USERNAME }}/secret-santa:${{ github.sha }}
 
-      - name: Build frontend
-        working-directory: frontend/secret-santa
-        run: npm run build
-
-      - name: Configure SSH
+      - name: Deploy image to EC2
+        uses: appleboy/ssh-action@v1.2.2
         env:
-          EC2_SSH_KEY: ${{ secrets.EC2_SSH_KEY }}
-        run: |
-          mkdir -p ~/.ssh
-          chmod 700 ~/.ssh
-          printf '%s\n' "$EC2_SSH_KEY" > ~/.ssh/ec2_key
-          chmod 600 ~/.ssh/ec2_key
+          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+          IMAGE_TAG: ${{ github.sha }}
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USERNAME }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          envs: DOCKER_USERNAME,DOCKER_PASSWORD,IMAGE_TAG
+          script: |
+            set -eu
 
-      - name: Add server host key
-        env:
-          EC2_HOST: ${{ secrets.EC2_HOST }}
-        run: |
-          ssh-keyscan -H "$EC2_HOST" >> ~/.ssh/known_hosts
-          chmod 600 ~/.ssh/known_hosts
+            echo "$DOCKER_PASSWORD" | sudo docker login \
+              --username "$DOCKER_USERNAME" --password-stdin
 
-      - name: Prepare deployment directory
-        env:
-          EC2_HOST: ${{ secrets.EC2_HOST }}
-          EC2_USERNAME: ${{ secrets.EC2_USERNAME }}
-        run: |
-          ssh -i ~/.ssh/ec2_key \
-            "$EC2_USERNAME@$EC2_HOST" \
-            "sudo mkdir -p /var/www/secret-santa &&
-             sudo chown ubuntu:ubuntu /var/www/secret-santa"
+            sudo docker pull "$DOCKER_USERNAME/secret-santa:$IMAGE_TAG"
 
-      - name: Upload frontend
-        env:
-          EC2_HOST: ${{ secrets.EC2_HOST }}
-          EC2_USERNAME: ${{ secrets.EC2_USERNAME }}
-        run: |
-          rsync -az --delete \
-            -e "ssh -i ~/.ssh/ec2_key" \
-            frontend/secret-santa/dist/ \
-            "$EC2_USERNAME@$EC2_HOST:/var/www/secret-santa/"
+            # Replace this app's existing container only.
+            sudo docker rm -f secret-santa 2>/dev/null || true
 
-      - name: Verify Nginx
-        env:
-          EC2_HOST: ${{ secrets.EC2_HOST }}
-          EC2_USERNAME: ${{ secrets.EC2_USERNAME }}
-        run: |
-          ssh -i ~/.ssh/ec2_key \
-            "$EC2_USERNAME@$EC2_HOST" \
-            "sudo nginx -t"
+            sudo docker run -d \
+              --name secret-santa \
+              --restart unless-stopped \
+              -p 3000:3000 \
+              "$DOCKER_USERNAME/secret-santa:$IMAGE_TAG"
+
+            # Remove dangling images only; do not prune volumes or other containers.
+            sudo docker image prune -f
