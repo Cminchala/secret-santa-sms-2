@@ -16,7 +16,8 @@ api_key=os.getenv('apikey')
 stripe.api_key = os.getenv('STRIPE_SECRET_KEY')
 
 origins = [
-    "http://localhost:3000"
+    "http://localhost:3000",
+    "http://ec2-3-145-81-205.us-east-2.compute.amazonaws.com:3000/"
 
 ]
 
