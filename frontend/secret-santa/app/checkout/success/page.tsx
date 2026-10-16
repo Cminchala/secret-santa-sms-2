@@ -6,7 +6,7 @@ import { useSearchParams } from "next/navigation";
 import { FestiveNavbar } from "@/components/christmas/festive-navbar";
 import { Snowfall } from "@/components/christmas/snowfall";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 function SuccessContent() {
   const searchParams = useSearchParams();
