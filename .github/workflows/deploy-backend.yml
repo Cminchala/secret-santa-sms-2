@@ -1,0 +1,49 @@
+name: Build and deploy Secret Santa Backend
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - "backend/**"
+      - "pyproject.toml"
+      - ".github/workflows/deploy-backend.yml"
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./backend/Dockerfile
+          push: true
+          tags: ${{ secrets.DOCKER_USERNAME }}/secret-santa-backend:latest
+
+      - uses: appleboy/ssh-action@v1.2.2
+        env:
+          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+          APIKEY: ${{ secrets.TEXTBELT_API_KEY }}
+          STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY }}
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USERNAME }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          envs: DOCKER_USERNAME,APIKEY,STRIPE_SECRET_KEY
+          script: |
+            sudo docker pull $DOCKER_USERNAME/secret-santa-backend:latest
+            sudo docker rm -f secret-santa-backend 2>/dev/null || true
+            sudo docker run -d \
+              --name secret-santa-backend \
+              --restart unless-stopped \
+              -p 8000:8000 \
+              -e apikey="$APIKEY" \
+              -e STRIPE_SECRET_KEY="$STRIPE_SECRET_KEY" \
+              $DOCKER_USERNAME/secret-santa-backend:latest
