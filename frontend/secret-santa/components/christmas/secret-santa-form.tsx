@@ -16,7 +16,7 @@ type Status =
   | { kind: "success"; message: string }
   | { kind: "error"; message: string };
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
 let nextId = 1;
 const emptyRow = (): Participant => ({ id: nextId++, name: "", phoneNum: "", wishlist: "" });

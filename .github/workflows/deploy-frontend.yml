@@ -37,7 +37,7 @@ jobs:
           file: ./frontend/secret-santa/Dockerfile
           push: true
           build-args: |
-            ${{ secrets.NEXT_PUBLIC_API_URL }}
+            NEXT_PUBLIC_API_URL=${{ secrets.NEXT_PUBLIC_API_URL}}
           tags: |
             ${{ secrets.DOCKER_USERNAME }}/secret-santa:latest
             ${{ secrets.DOCKER_USERNAME }}/secret-santa:${{ github.sha }}
@@ -69,6 +69,7 @@ jobs:
               --name secret-santa \
               --restart unless-stopped \
               -p 3000:3000 \
+              -e NEXT_PUBLIC_API_URL=secrets.NEXT_PUBLIC_API_URL \
               "$DOCKER_USERNAME/secret-santa:$IMAGE_TAG"
 
             # Remove dangling images only; do not prune volumes or other containers.
