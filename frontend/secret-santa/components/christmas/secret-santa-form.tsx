@@ -62,7 +62,7 @@ export function SecretSantaForm() {
       sessionStorage.setItem("secret_santa_participants", JSON.stringify(payload));
 
       // Call the FastAPI backend endpoint to create a Stripe checkout session
-      const res = await fetch(`${API_URL}/create-checkout-session`, {
+      const res = await fetch(`${API_URL}/create-checkout-session:8000`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ participants: payload }),
